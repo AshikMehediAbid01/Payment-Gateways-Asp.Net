@@ -1,9 +1,14 @@
-﻿
-@{
-    ViewData["Title"] = "Fail";
+﻿@{
+    ViewData["Title"] = "Payment Failed";
 }
-<h2>❌ Payment Failed</h2>
 
-<p>Your payment could not be completed. Please try again later.</p>
-<a asp-action="Index" class="btn btn-dark btn-sm">Back to List</a>
-
+<div class="d-flex justify-content-center align-items-center vh-100 bg-light">
+    <div class="card shadow-lg p-4 text-center" style="max-width: 400px; width: 100%;">
+        <div class="mb-4">
+            <div class="display-1 text-danger">❌</div>
+            <h3 class="mt-3 text-danger">Payment Failed</h3>
+        </div>
+        <p class="text-muted">Unfortunately, your payment could not be completed.<br>Please try again later.</p>
+        <a asp-action="Index" class="btn btn-outline-dark mt-3">⬅️ Back to List</a>
+    </div>
+</div>
