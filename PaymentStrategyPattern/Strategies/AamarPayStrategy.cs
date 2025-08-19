@@ -1,14 +1,29 @@
 ﻿using PaymentStrategyPattern.Models;
 using PaymentStrategyPattern.Models.AamarPay;
 using PaymentStrategyPattern.Services;
+using System.Configuration;
 using System.Text.Json;
 
 namespace PaymentStrategyPattern.Strategies;
 
-public class AamarPayStrategy(IHttpClientFactory _httpClientFactory, ILogger<AamarPayStrategy> _logger) : IPaymentStrategy
+public class AamarPayStrategy : IPaymentStrategy
 {
-    private readonly string storeId = "aamarpaytest";
-    private readonly string signatureKey = "dbb74894e82415a2f7ff0ec3a97e4183";
+    private readonly string _storeId;
+    private readonly string _signatureKey;
+    private readonly IHttpClientFactory _httpClientFactory;
+    private readonly ILogger<AamarPayStrategy> _logger;
+
+
+    public AamarPayStrategy(IHttpClientFactory httpClientFactory, ILogger<AamarPayStrategy> logger, IConfiguration configuration)
+    {
+        _httpClientFactory = httpClientFactory;
+        _logger = logger;
+        _storeId = configuration["AamarPay:StoreId"] ?? throw new ArgumentNullException("AamarPay StoreId not configured");
+        _signatureKey = configuration["AamarPay:SignatureKey"] ?? throw new ArgumentNullException("AamarPay SignatureKey not configured");
+
+    }
+
+
 
     private const string SandboxApiUrl = "https://sandbox.aamarpay.com/jsonpost.php";
 
@@ -18,37 +33,29 @@ public class AamarPayStrategy(IHttpClientFactory _httpClientFactory, ILogger<Aam
     }
 
 
-    public async Task<string> PayAsync(decimal amount, string customerName)
+    public async Task<string> PayAsync(OrderDetails orderDetails)
     {
-
-
-        var CustomerName = customerName as string;
-        var CustomerEmail = "xyz@gmail.com";
-        var CustomerPhone = "01645259878";
-        var TotalPrice = amount.ToString();
-        var CustomerAddress = "Mohakhali";
-
         var paymentData = new AamarPayRequest
         {
-            store_id = storeId,
+            store_id = _storeId,
             tran_id = Guid.NewGuid().ToString(),
             //success_url = "https://localhost:7180/checkout/success",
             success_url = "https://localhost:7180/checkout/success?gateway=AamarPay",
             fail_url = "https://localhost:7180/checkout/fail",
             cancel_url = "https://localhost:7180/Checkout/cancel",
-            amount = TotalPrice,
+            amount = orderDetails.Amount.ToString(),
             currency = "BDT",
-            signature_key = signatureKey,
+            signature_key = _signatureKey,
             desc = "Merchant Registration Payment",
-            cus_name = CustomerName ?? "anonymous",
-            cus_email = CustomerEmail ?? "payer@merchantcusomter.com",
-            cus_add1 = CustomerAddress,
+            cus_name = orderDetails.CustomerName ?? "anonymous",
+            cus_email = $"{(orderDetails.CustomerName ?? "anonymous").ToLower().Replace(" ", ".")}@merchantcusomter.com",
+            cus_add1 = orderDetails.CustomerAddress,
             cus_add2 = "Mohakhali DOHS",
             cus_city = "Dhaka",
             cus_state = "Dhaka",
             cus_postcode = "1206",
             cus_country = "Bangladesh",
-            cus_phone = CustomerPhone,
+            cus_phone = orderDetails.CustomerPhone,
             type = "json"
         };
 
@@ -84,7 +91,7 @@ public class AamarPayStrategy(IHttpClientFactory _httpClientFactory, ILogger<Aam
             };
         }
 
-        string url = $"https://sandbox.aamarpay.com/api/v1/trxcheck/request.php?request_id={mer_txnid}&store_id={storeId}&signature_key={signatureKey}&type=json";
+        string url = $"https://sandbox.aamarpay.com/api/v1/trxcheck/request.php?request_id={mer_txnid}&store_id={_storeId}&signature_key={_signatureKey}&type=json";
 
         var client = _httpClientFactory.CreateClient();
         var response = await client.GetAsync(url);

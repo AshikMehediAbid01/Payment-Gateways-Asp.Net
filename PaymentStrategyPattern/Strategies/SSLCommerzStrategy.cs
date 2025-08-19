@@ -6,10 +6,21 @@ using System.Text.Json;
 
 namespace PaymentStrategyPattern.Strategies;
 
-public class SSLCommerzStrategy(IHttpClientFactory _httpClientFactory, ILogger<SSLCommerzStrategy> _logger) : IPaymentStrategy
+public class SSLCommerzStrategy : IPaymentStrategy
 {
-    private readonly string store_id = "books687e26450e723";
-    private readonly string storePassword = "books687e26450e723@ssl";
+    private readonly string _storeId;
+    private readonly string _storePassword;
+    private readonly IHttpClientFactory _httpClientFactory;
+    private readonly ILogger<SSLCommerzStrategy> _logger;
+
+    public SSLCommerzStrategy(IHttpClientFactory httpClientFactory, ILogger<SSLCommerzStrategy> logger, IConfiguration configuration)
+    {
+        _httpClientFactory = httpClientFactory;
+        _logger = logger;
+        _storeId = configuration["SSLCommerz:StoreId"] ?? throw new ArgumentNullException("SSLCommerz StoreId not configured");
+        _storePassword = configuration["SSLCommerz:StorePassword"] ?? throw new ArgumentNullException("SSLCommerz StorePassword not configured");
+    }
+
 
     private const string BASE_URL = "https://sandbox.sslcommerz.com/";
     private const string SUBMIT_URL = "gwprocess/v3/api.php";
@@ -21,30 +32,22 @@ public class SSLCommerzStrategy(IHttpClientFactory _httpClientFactory, ILogger<S
     }
 
 
-    public async Task<string> PayAsync(decimal amount, string customerName)
+    public async Task<string> PayAsync(OrderDetails orderDetails)
     {
-
-
-        var CustomerName = customerName as string;
-        var CustomerEmail = "xyz@gmail.com";
-        var CustomerPhone = "01645259878";
-        var TotalPrice = amount.ToString();
-        var CustomerAddress = "Mohakhali";
-
         var paymentData = new Dictionary<string, string>
         {
-            ["store_id"] = store_id,
-            ["store_passwd"] = storePassword,
-            ["total_amount"] = amount.ToString(),
+            ["store_id"] = _storeId,
+            ["store_passwd"] = _storePassword,
+            ["total_amount"] = orderDetails.Amount.ToString(),
             ["currency"] = "BDT",
             ["tran_id"] = Guid.NewGuid().ToString(),
             ["success_url"] = "https://localhost:7180/checkout/success?gateway=SSLCommerz",
             ["fail_url"] = "https://localhost:7180/checkout/fail",
             ["cancel_url"] = "https://localhost:7180/Checkout/cancel",
-            ["cus_name"] = customerName ?? "anonymous",
-            ["cus_email"] = "xyz@gmail.com",
-            ["cus_phone"] = "01645259878",
-            ["cus_add1"] = "Mohakhali",
+            ["cus_name"] = orderDetails.CustomerName ?? "anonymous",
+            ["cus_email"] = $"{(orderDetails.CustomerName ?? "anonymous").ToLower().Replace(" ", ".")}@merchantcusomter.com",
+            ["cus_phone"] = orderDetails.CustomerPhone,
+            ["cus_add1"] = orderDetails.CustomerAddress,
             ["cus_city"] = "Test City",
             ["cus_country"] = "Bangladesh",
             ["product_category"] = "Test",
@@ -67,7 +70,6 @@ public class SSLCommerzStrategy(IHttpClientFactory _httpClientFactory, ILogger<S
         try
         {
             var result = await response.Content.ReadFromJsonAsync<JsonElement>();
-
             if (result.TryGetProperty("GatewayPageURL", out var gatewayUrl))
             {
                 return gatewayUrl.GetString();
@@ -92,7 +94,7 @@ public class SSLCommerzStrategy(IHttpClientFactory _httpClientFactory, ILogger<S
             };
         }
 
-        string url = $"https://sandbox.sslcommerz.com/validator/api/validationserverAPI.php?val_id={val_id}&store_id={store_id}&store_passwd={storePassword}&v=1&format=json";
+        string url = $"https://sandbox.sslcommerz.com/validator/api/validationserverAPI.php?val_id={val_id}&store_id={_storeId}&store_passwd={_storePassword}&v=1&format=json";
 
         var client = _httpClientFactory.CreateClient();
         var response = await client.GetAsync(url);

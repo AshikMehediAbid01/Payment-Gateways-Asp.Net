@@ -11,10 +11,10 @@ public class PaymentService
         _factory = factory;
     }
 
-    public Task<string> ProcessPaymentAsync(string gateway, decimal amount, string customerName)
+    public Task<string> ProcessPaymentAsync(string gateway, OrderDetails orderDetails)
     {
         var strategy = _factory.GetStrategy(gateway);
-        return strategy.PayAsync(amount, customerName);
+        return strategy.PayAsync(orderDetails);
     }
 
     public Task<PaymentResult> VerifyPaymentAsync(string gateway, IQueryCollection query, IFormCollection form)

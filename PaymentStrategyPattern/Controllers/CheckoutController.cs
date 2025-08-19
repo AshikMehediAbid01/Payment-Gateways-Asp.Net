@@ -16,15 +16,16 @@ public class CheckoutController : Controller
 
     [HttpGet]
     public IActionResult Index()
+    
     {
         ViewBag.Gateways = new List<string> { "AamarPay", "SSLCommerz" };
         return View();
     }
 
     [HttpPost]
-    public async Task<IActionResult> ProcessPayment(string gateway, decimal amount, string customerName)
+    public async Task<IActionResult> ProcessPayment(string gateway, OrderDetails orderDetails)
     {
-        var paymentUrl = await _paymentService.ProcessPaymentAsync(gateway, amount, customerName);
+        var paymentUrl = await _paymentService.ProcessPaymentAsync(gateway, orderDetails);
         ViewBag.Result = paymentUrl;
         if (paymentUrl.StartsWith("http"))
             return Redirect(paymentUrl); // controller decides redirection

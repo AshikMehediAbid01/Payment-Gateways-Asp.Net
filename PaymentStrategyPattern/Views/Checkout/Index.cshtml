@@ -1,14 +1,21 @@
-﻿@{
+﻿@model OrderDetails;
+@{
     ViewData["Title"] = "Checkout";
 }
 <h2>Checkout</h2>
 
 <form asp-action="ProcessPayment" method="post" class="mt-4">
-    <label>Customer Name:</label>
-    <input type="text" name="customerName" required class="form-control" />
+    <label>Name:</label>
+    <input type="text" asp-for="@Model.CustomerName" required class="form-control" />
+
+    <label>Phone:</label>
+    <input type="number" asp-for="@Model.CustomerPhone" required class="form-control" />
+
+    <label>Address:</label>
+    <input type="text" asp-for="@Model.CustomerAddress" required class="form-control" />
 
     <label>Amount:</label>
-    <input type="number" name="amount" step="0.01" required class="form-control" />
+    <input type="number" asp-for="@Model.Amount" step="0.01" required class="form-control" />
 
     <label>Payment Gateway:</label>
     <select name="gateway" class="form-control">
