@@ -1,0 +1,41 @@
+﻿@model PaymentStrategyPattern.Models.PaymentResult
+
+@{
+    ViewData["Title"] = "Success";
+}
+
+<h1>Success</h1>
+
+<div>
+    <h4>PaymentResult</h4>
+    <hr />
+    <dl class="row">
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.Success)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.Success)
+        </dd>
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.TransactionId)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.TransactionId)
+        </dd>
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.Message)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.Message)
+        </dd>
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.Amount)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.Amount)
+        </dd>
+    </dl>
+</div>
+<div>
+    <a asp-action="Index" class="btn btn-dark btn-sm">Back to List</a>
+</div>

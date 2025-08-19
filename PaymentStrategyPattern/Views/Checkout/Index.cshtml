@@ -1,0 +1,23 @@
+﻿@{
+    ViewData["Title"] = "Checkout";
+}
+<h2>Checkout</h2>
+
+<form asp-action="ProcessPayment" method="post" class="mt-4">
+    <label>Customer Name:</label>
+    <input type="text" name="customerName" required class="form-control" />
+
+    <label>Amount:</label>
+    <input type="number" name="amount" step="0.01" required class="form-control" />
+
+    <label>Payment Gateway:</label>
+    <select name="gateway" class="form-control">
+        @foreach (var g in ViewBag.Gateways)
+        {
+            <option value="@g">@g</option>
+        }
+    </select>
+
+    <br />
+    <button type="submit" class="btn btn-primary">Pay Now</button>
+</form>
